@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Evals{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h2>Eval results</h2>
+    <p class="lede">Measured from the last live run against DeepSeek. Re-run with <span class="mono">python -m ticket_agent.evals</span>.</p>
+  </div>
+</div>
+{% if summary %}
+  <p>
+    <span class="badge {{ 'ok' if summary.all_passed else 'bad' }}">{{ "ALL PASS" if summary.all_passed else "FAILED" }}</span>
+    <span class="muted">{{ summary.model }} · {{ summary.started_at }} to {{ summary.finished_at }} ({{ summary.timezone }})</span>
+  </p>
+  <div class="checks">
+    {% for check in summary.summary %}
+      <div class="check {{ '' if check.passed else 'fail' }}">
+        <strong>{{ check.name }}</strong><br>
+        {{ "PASS" if check.passed else "FAIL" }}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="card block">
+    <h3>Cost and latency</h3>
+    <dl class="kv">
+      <dt>Runs</dt><dd>{{ summary.totals.runs }}</dd>
+      <dt>Average latency</dt><dd>{{ summary.totals.latency_ms_avg }} ms</dd>
+      <dt>Max latency</dt><dd>{{ summary.totals.latency_ms_max }} ms</dd>
+      <dt>Tokens</dt><dd>prompt {{ summary.totals.usage.prompt_tokens }} / completion {{ summary.totals.usage.completion_tokens }} / cached {{ summary.totals.usage.cached_tokens }}</dd>
+      <dt>Approx. cost</dt><dd>
+        {% if summary.totals.cost.usd is not none %}
+          ${{ "%.6f"|format(summary.totals.cost.usd) }} USD ({{ summary.totals.cost.band }})
+        {% else %}n/a{% endif %}
+      </dd>
+    </dl>
+  </div>
+{% elif not markdown %}
+  <p class="muted">No eval results yet. From the project root, run <span class="mono">python -m ticket_agent.evals</span> with DEEPSEEK_API_KEY set.</p>
+{% endif %}
+{% if markdown %}
+  <section class="card block md" style="margin-top:18px">
+    <pre class="ticket-body" style="margin:0">{{ markdown }}</pre>
+  </section>
+{% endif %}
+{% endblock %}

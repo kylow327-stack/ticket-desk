@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Ticket Desk{% endblock %} · Guardrail Agent</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail">
+      <a class="brand" href="/">
+        <h1>Ticket Desk</h1>
+        <p>Tool-using support agent with a hard refund approval gate.</p>
+      </a>
+      <nav class="nav">
+        <a href="/" class="{{ 'active' if page == 'tickets' else '' }}">Tickets</a>
+        <a href="/refunds" class="{{ 'active' if page == 'refunds' else '' }}">
+          Approvals
+          {% if pending_count %}<span class="badge warn">{{ pending_count }}</span>{% endif %}
+        </a>
+        <a href="/traces" class="{{ 'active' if page == 'traces' else '' }}">Traces</a>
+        <a href="/evals" class="{{ 'active' if page == 'evals' else '' }}">Evals</a>
+      </nav>
+      <div class="rail-meta">
+        <div><span class="dot {{ 'off' if not key_present else '' }}"></span>{% if key_present %}API key present{% else %}API key missing{% endif %}</div>
+        <div>Model: {{ model }}</div>
+        <div>Demo only · not a production helpdesk</div>
+      </div>
+    </aside>
+    <main class="main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

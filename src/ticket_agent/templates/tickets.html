@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Tickets{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h2>Queue</h2>
+    <p class="lede">Nine anonymised tickets. Run the agent on one, inspect the draft, and approve any refund by hand.</p>
+  </div>
+  <div class="actions">
+    <form method="post" action="/demo/reset" onsubmit="return confirm('Reset refunds, runs, and traces? Tickets stay the same.')">
+      <button class="ghost" type="submit">Reset demo data</button>
+    </form>
+  </div>
+</div>
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Ticket</th>
+        <th>Subject</th>
+        <th>Last run</th>
+        <th>Refund</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td class="mono"><a class="rowlink" href="/tickets/{{ row.ticket.id }}">{{ row.ticket.id }}</a></td>
+        <td>
+          <div class="subject">{{ row.ticket.subject }}</div>
+          <div class="muted">{{ row.ticket.customer_first_name or "—" }}{% if row.ticket.order_id %} · {{ row.ticket.order_id }}{% endif %}</div>
+        </td>
+        <td>
+          {% if row.last %}
+            <span class="badge info">{{ row.last.classification or row.last.stop_reason }}</span>
+            <div class="muted">{{ row.last.stop_reason }} · {{ row.last.latency_ms }} ms</div>
+          {% else %}
+            <span class="muted">Not run</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if row.pending %}
+            <span class="badge warn">Pending {{ row.pending|length }}</span>
+          {% elif row.refunds %}
+            <span class="badge {{ 'ok' if row.refunds[0].status.value == 'approved' else 'bad' }}">{{ row.refunds[0].status.value }}</span>
+          {% else %}
+            <span class="muted">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

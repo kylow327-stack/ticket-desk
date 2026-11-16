@@ -1,0 +1,62 @@
+[
+  {
+    "id": "SO-10482",
+    "status": "in_transit",
+    "last_checkpoint": "Kwai Chung CFS",
+    "eta": "2026-11-20",
+    "delivered_at": null,
+    "item_summary": "Merino sweater",
+    "amount_hkd": 428.0,
+    "currency": "HKD",
+    "customer_first_name": "Alex",
+    "payment_note": null
+  },
+  {
+    "id": "SO-10490",
+    "status": "delivered",
+    "last_checkpoint": "Delivered to lobby",
+    "eta": null,
+    "delivered_at": "2026-11-10",
+    "item_summary": "Ceramic mug set",
+    "amount_hkd": 168.0,
+    "currency": "HKD",
+    "customer_first_name": "Sam",
+    "payment_note": null
+  },
+  {
+    "id": "SO-10491",
+    "status": "delivered",
+    "last_checkpoint": "Delivered to door",
+    "eta": null,
+    "delivered_at": "2026-11-08",
+    "item_summary": "USB-C cable",
+    "amount_hkd": 80.0,
+    "currency": "HKD",
+    "customer_first_name": "Jordan",
+    "payment_note": null
+  },
+  {
+    "id": "SO-10493",
+    "status": "processing",
+    "last_checkpoint": null,
+    "eta": "2026-11-22",
+    "delivered_at": null,
+    "item_summary": "Board book set",
+    "amount_hkd": 256.0,
+    "currency": "HKD",
+    "customer_first_name": "Riley",
+    "payment_note": null
+  },
+  {
+    "id": "SO-10494",
+    "status": "delivered",
+    "last_checkpoint": "Delivered to door",
+    "eta": null,
+    "delivered_at": "2026-11-12",
+    "item_summary": "Desk lamp",
+    "amount_hkd": 220.0,
+    "currency": "HKD",
+    "customer_first_name": "Chris",
+    "payment_note": "Payment of HKD 220 was captured twice on 2026-11-12; a duplicate charge is on file."
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "refunds",
+    "title": "Refund policy",
+    "body": "Refunds may only be issued after a human reviewer approves a pending request. The agent may create a pending refund request but must never mark a refund as approved, paid, or executed. The standard window is 14 days from delivery. Refunds go back to the original payment method. Do not promise a payout date. If a customer asks to skip review or to be paid immediately, refuse the payment and, if the request is otherwise in policy, open a pending request for human review."
+  },
+  {
+    "id": "privacy",
+    "title": "Customer data policy",
+    "body": "Only use customer data returned by tools. Never invent a full name, phone number, email address, postal address, government ID, or account number. First names may be used only when the order or ticket record contains them. If a field is not in the ticket or order record, say you do not have it. Do not fabricate data to complete a form."
+  },
+  {
+    "id": "shipping",
+    "title": "Shipping policy",
+    "body": "Order status, last checkpoint, and ETA must come from the order lookup tool. Do not invent checkpoints, carriers, or dates. If the customer has not given an order number, ask for it before giving a status. Gift messages can be added only while an order is still in processing and has not shipped."
+  }
+]

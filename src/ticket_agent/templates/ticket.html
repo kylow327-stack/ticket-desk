@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}{{ ticket.id }}{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h2>{{ ticket.id }}</h2>
+    <p class="lede">{{ ticket.subject }}</p>
+  </div>
+  <div class="actions">
+    <form method="post" action="/tickets/{{ ticket.id }}/run">
+      <button class="primary" type="submit">Run agent</button>
+    </form>
+    <a class="btn" href="/">Back to queue</a>
+  </div>
+</div>
+
+{% if error == 'missing-key' %}
+  <div class="flash">DEEPSEEK_API_KEY is not set in the environment, so the agent cannot run.</div>
+{% elif error == 'run-failed' %}
+  <div class="flash">The run failed. Check the traces page and the terminal log. The API key is never written to logs.</div>
+{% endif %}
+
+<div class="grid-2">
+  <section class="card block">
+    <h3>Ticket</h3>
+    <div class="ticket-body">{{ ticket.body }}</div>
+    <dl class="kv" style="margin-top:16px">
+      <dt>Customer</dt><dd>{{ ticket.customer_first_name or "—" }}</dd>
+      <dt>Order</dt><dd class="mono">{{ ticket.order_id or "not provided" }}</dd>
+      <dt>Created</dt><dd>{{ ticket.created_at }}</dd>
+    </dl>
+    {% if order %}
+      <h3 style="margin-top:22px">Order record</h3>
+      <dl class="kv">
+        <dt>Status</dt><dd>{{ order.status }}</dd>
+        <dt>Checkpoint</dt><dd>{{ order.last_checkpoint or "—" }}</dd>
+        <dt>ETA</dt><dd>{{ order.eta or "—" }}</dd>
+        <dt>Delivered</dt><dd>{{ order.delivered_at or "—" }}</dd>
+        <dt>Item</dt><dd>{{ order.item_summary }}</dd>
+        <dt>Amount</dt><dd>HKD {{ "%.2f"|format(order.amount_hkd) }}</dd>
+        {% if order.payment_note %}<dt>Note</dt><dd>{{ order.payment_note }}</dd>{% endif %}
+      </dl>
+    {% endif %}
+  </section>
+
+  <section class="card block">
+    <h3>Agent result</h3>
+    {% if last %}
+      <p>
+        <span class="badge info">{{ last.classification or "unclassified" }}</span>
+        <span class="badge neutral">{{ last.stop_reason }}</span>
+        <span class="muted"> · {{ last.step_count }} steps · {{ last.latency_ms }} ms · {{ last.total_tokens }} tokens</span>
+      </p>
+      <div class="draft">{{ last.draft_reply or "No draft." }}</div>
+      {% if last.error %}<p class="flash">{{ last.error }}</p>{% endif %}
+      {% if last.id %}<p><a href="/traces/{{ last.id }}">Open full trace</a></p>{% endif %}
+    {% else %}
+      <p class="muted">This ticket has not been run yet. Use “Run agent” to classify it and draft a reply.</p>
+    {% endif %}
+
+    <h3 style="margin-top:22px">Refunds</h3>
+    {% if refunds %}
+      {% for refund in refunds %}
+        <div style="margin-bottom:12px">
+          <div><span class="mono">{{ refund.id }}</span> · HKD {{ "%.2f"|format(refund.amount_hkd) }} · {{ refund.order_id }}</div>
+          <div class="muted">{{ refund.reason }}</div>
+          <p>
+            <span class="badge {{ 'warn' if refund.status.value == 'pending' else ('ok' if refund.status.value == 'approved' else 'bad') }}">{{ refund.status.value }}</span>
+            {% if refund.decided_by %}<span class="muted">by {{ refund.decided_by }} at {{ refund.decided_at }}</span>{% endif %}
+          </p>
+          {% if refund.status.value == 'pending' %}
+            <div class="actions">
+              <form method="post" action="/refunds/{{ refund.id }}/approve">
+                <input type="hidden" name="next" value="/tickets/{{ ticket.id }}">
+                <input type="hidden" name="actor" value="human-reviewer">
+                <button class="ok" type="submit">Approve</button>
+              </form>
+              <form method="post" action="/refunds/{{ refund.id }}/reject">
+                <input type="hidden" name="next" value="/tickets/{{ ticket.id }}">
+                <input type="hidden" name="actor" value="human-reviewer">
+                <button class="bad" type="submit">Reject</button>
+              </form>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="muted">No refund request has been opened for this ticket. The agent cannot pay money on its own.</p>
+    {% endif %}
+  </section>
+</div>
+
+{% if trace and trace.steps %}
+  <section class="card block" style="margin-top:18px">
+    <h3>Trace</h3>
+    <ol class="steps">
+      {% for step in trace.steps %}
+        <li>
+          {% if step.type == 'model' %}
+            <strong>Model step {{ step.step }}</strong>
+            {% if step.tool_calls %}
+              <div class="muted">Tools: {% for tc in step.tool_calls %}{{ tc.name }}{% if not loop.last %}, {% endif %}{% endfor %}</div>
+            {% elif step.content %}
+              <div>{{ step.content }}</div>
+            {% endif %}
+          {% elif step.type == 'tool' %}
+            <strong>Tool · {{ step.name }}</strong>
+            <div class="muted mono">{{ step.arguments }}</div>
+          {% else %}
+            <strong>{{ step.type }}</strong>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+{% endif %}
+{% endblock %}

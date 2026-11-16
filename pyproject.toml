@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ticket-guardrail-agent"
+version = "0.1.0"
+description = "Hire-ready tool-using support agent with a hard refund approval gate."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Rick Low" }]
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn[standard]>=0.32",
+  "jinja2>=3.1",
+  "python-multipart>=0.0.9",
+  "pydantic>=2.9",
+  "openai>=1.55",
+  "langgraph>=0.2",
+  "langchain-core>=0.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+ticket-desk = "ticket_agent.app:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+ticket_agent = ["templates/*.html", "static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q --strict-markers"
+markers = [
+  "live: tests that call the DeepSeek API (not run by default)",
+]

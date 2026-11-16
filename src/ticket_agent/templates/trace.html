@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ run.id }}{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h2>{{ run.id }}</h2>
+    <p class="lede">Ticket <a href="/tickets/{{ run.ticket_id }}">{{ run.ticket_id }}</a> · {{ run.classification or "unclassified" }} · {{ run.stop_reason }}</p>
+  </div>
+  <a class="btn" href="/traces">All traces</a>
+</div>
+<pre class="trace">{{ pretty }}</pre>
+{% endblock %}

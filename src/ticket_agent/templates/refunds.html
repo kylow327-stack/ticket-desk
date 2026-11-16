@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Approvals{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h2>Human approvals</h2>
+    <p class="lede">Refunds stay pending until a person approves or rejects them. There is no agent tool that can mark them paid.</p>
+  </div>
+</div>
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr><th>Refund</th><th>Ticket</th><th>Order</th><th>Amount</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for refund in refunds %}
+      <tr>
+        <td class="mono">{{ refund.id }}</td>
+        <td><a href="/tickets/{{ refund.ticket_id }}">{{ refund.ticket_id }}</a></td>
+        <td class="mono">{{ refund.order_id }}</td>
+        <td>HKD {{ "%.2f"|format(refund.amount_hkd) }}</td>
+        <td><span class="badge {{ 'warn' if refund.status.value == 'pending' else ('ok' if refund.status.value == 'approved' else 'bad') }}">{{ refund.status.value }}</span></td>
+        <td>
+          {% if refund.status.value == 'pending' %}
+            <div class="actions">
+              <form method="post" action="/refunds/{{ refund.id }}/approve">
+                <input type="hidden" name="next" value="/refunds">
+                <input type="hidden" name="actor" value="human-reviewer">
+                <button class="ok" type="submit">Approve</button>
+              </form>
+              <form method="post" action="/refunds/{{ refund.id }}/reject">
+                <input type="hidden" name="next" value="/refunds">
+                <input type="hidden" name="actor" value="human-reviewer">
+                <button class="bad" type="submit">Reject</button>
+              </form>
+            </div>
+          {% else %}
+            <span class="muted">{{ refund.decided_by }} · {{ refund.decided_at }}</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      {% if not refunds %}
+      <tr><td colspan="6" class="muted">No refunds yet. Run a refund ticket such as T-1002 or T-1006.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

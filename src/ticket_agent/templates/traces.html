@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Traces{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h2>Run traces</h2>
+    <p class="lede">Every agent run is stored as a JSONL log plus a SQLite summary. Production would swap this for Langfuse or LangSmith.</p>
+  </div>
+</div>
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr><th>Run</th><th>Ticket</th><th>Class</th><th>Stop</th><th>Latency</th><th>Tokens</th></tr>
+    </thead>
+    <tbody>
+      {% for run in runs %}
+      <tr>
+        <td class="mono"><a class="rowlink" href="/traces/{{ run.id }}">{{ run.id }}</a></td>
+        <td><a href="/tickets/{{ run.ticket_id }}">{{ run.ticket_id }}</a></td>
+        <td>{{ run.classification or "—" }}</td>
+        <td>{{ run.stop_reason }}</td>
+        <td>{{ run.latency_ms }} ms</td>
+        <td>{{ run.total_tokens }}</td>
+      </tr>
+      {% endfor %}
+      {% if not runs %}
+      <tr><td colspan="6" class="muted">No runs yet.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
