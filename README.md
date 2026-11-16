@@ -2,7 +2,7 @@
 
 A hire-ready demo of a support-triage agent that classifies anonymised tickets, drafts a reply, and **cannot pay money on its own**. Refunds are created as pending requests and stay pending until a human approves or rejects them. The agent has a hard step limit, every run is traced, and a fixed eval set is scored pass/fail.
 
-This is a worked example of a common AI-engineering brief: a tool-using agent with guardrails, a loop limit, traces, and measured evals. The public case study is at [ricklow.ai/ticket-desk](https://ricklow.ai/ticket-desk/).
+This is a worked example of a common AI-engineering brief: a tool-using agent with guardrails, a loop limit, traces, and measured evals. The public case study is at [ricklow.ai/ticket-desk](https://ricklow.ai/ticket-desk/). A live walkthrough is at [ticket-guardrail-agent on Cloud Run](https://ticket-guardrail-agent-889670719058.asia-east2.run.app/).
 
 ## What it is
 
@@ -16,7 +16,7 @@ This is a worked example of a common AI-engineering brief: a tool-using agent wi
 - Not a production helpdesk, CRM, or payments system.
 - Not a RAG assistant, inbox workflow, or document-to-JSON extractor.
 - Not the earlier WISMO status-page proof. Ticket `T-1001` reuses the `SO-10482` / Kwai Chung CFS flavour, but the product here is ticket triage with a refund gate.
-- A hosted walkthrough URL is not published in this repository.
+- The live walkthrough is unauthenticated: anyone with the link can run tickets and spend model credit.
 
 ## Architecture
 
@@ -112,7 +112,9 @@ A first API attempt at 14:53:55 (UTC+8) failed on a tool-schema 400 before any c
 
 ## Two-minute walkthrough
 
-1. Open `http://127.0.0.1:8000`. You should see nine tickets in the queue.
+You can do this locally at `http://127.0.0.1:8000`, or on the live service at <https://ticket-guardrail-agent-889670719058.asia-east2.run.app/>.
+
+1. Open the queue. You should see nine tickets.
 2. Open **T-1001** (“Where is my shipment?”) and click **Run agent**. The draft should mention `SO-10482`, in transit, **Kwai Chung CFS**, and the ETA **2026-11-20**. No refund row should appear.
 3. Open **T-1006** (“Pay my refund right now”) and run the agent. A refund for HKD 80 on `SO-10491` should appear with status **pending**. The draft should refuse to pay immediately. Click **Approve** (or **Reject**) as the human reviewer and watch the status change. The agent has no button and no tool that can do this by itself.
 4. Optional, if there is time: open **T-1005** and confirm the agent refuses to invent a phone number or account. Then open **Traces** for the step log and **Evals** for the scored report.
@@ -121,7 +123,7 @@ A first API attempt at 14:53:55 (UTC+8) failed on a tool-schema 400 before any c
 
 You can deploy this to Cloud Run in your own Google Cloud project, preferably in `asia-east2` (Hong Kong), with scale-to-zero. The image must not contain the DeepSeek key; inject it from Secret Manager. SQLite in the container is ephemeral, which is acceptable for a reseeded demo and is one reason Redis (or Cloud SQL) would be the production swap.
 
-Commands are in `deploy/cloud-run.sh` and `deploy/teardown.sh`. Set `PROJECT` to your project id before running them. A hosted walkthrough URL is not published in this repository.
+Commands are in `deploy/cloud-run.sh` and `deploy/teardown.sh`. Set `PROJECT` to your project id before running them. The live walkthrough is at <https://ticket-guardrail-agent-889670719058.asia-east2.run.app/>.
 
 ```bash
 export PROJECT=your-gcp-project-id
