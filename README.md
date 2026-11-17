@@ -81,7 +81,7 @@ Live results are written to `evals/latest-results.md` and `evals/latest-results.
 
 ### LangSmith tracing and evals
 
-Local JSONL traces are enough for the walkthrough UI. To send graph runs to [LangSmith](https://smith.langchain.com/) and run the golden tickets as an experiment:
+Local JSONL traces are enough for the walkthrough UI. Tracing and evals need langsmith 0.14.17 or later, which includes the SmithDB query methods. To send graph runs to [LangSmith](https://smith.langchain.com/) and run the golden tickets as an experiment:
 
 ```bash
 export LANGSMITH_TRACING=true
