@@ -20,3 +20,9 @@ def store(tmp_path: Path) -> Store:
     s.seed_from_fixtures(fixture_dir=ROOT / "data", reset_operational=True)
     yield s
     s.close()
+
+
+@pytest.fixture(autouse=True)
+def _disable_langsmith_in_unit_tests(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Unit tests must stay offline and must not upload traces."""
+    monkeypatch.setenv("LANGSMITH_TRACING", "false")

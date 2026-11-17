@@ -73,10 +73,13 @@ class OpenAIChatClient:
     def __init__(self, settings: Optional[Settings] = None, client: Optional[OpenAI] = None):
         self.settings = settings or get_settings()
         self.model = self.settings.model
-        self._client = client or OpenAI(
+        raw = client or OpenAI(
             api_key=self.settings.api_key,
             base_url=self.settings.base_url,
         )
+        from ticket_agent.langsmith_tracing import maybe_wrap_openai
+
+        self._client = maybe_wrap_openai(raw)
 
     def complete(
         self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]

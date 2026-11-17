@@ -261,7 +261,21 @@ def run_agent(
         client = OpenAIChatClient(settings)
 
     graph = build_graph(client=client, tools=tools, store=store, max_steps=max_steps)
-    final_state = graph.invoke(initial)
+    from ticket_agent.langsmith_tracing import configure_tracing, flush_traces, tracing_enabled
+
+    if tracing_enabled():
+        configure_tracing(resolve_workspace=True)
+    try:
+        final_state = graph.invoke(
+            initial,
+            {
+                "run_name": f"ticket-desk:{ticket.id}",
+                "tags": ["ticket-desk"],
+                "metadata": {"ticket_id": ticket.id, "run_id": run_id},
+            },
+        )
+    finally:
+        flush_traces()
     finished = datetime.now(HK)
     latency_ms = int((time.perf_counter() - started_monotonic) * 1000)
 

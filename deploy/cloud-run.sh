@@ -33,5 +33,12 @@ echo "     --no-allow-unauthenticated \\"
 echo "     --set-secrets=DEEPSEEK_API_KEY=${SECRET_NAME}:latest \\"
 echo "     --set-env-vars=DEEPSEEK_MODEL=deepseek-flash,DEEPSEEK_BASE_URL=https://api.deepseek.com"
 echo
+echo "Optional LangSmith traces (not required, not deployed by this script):"
+echo "   Create a LANGSMITH_API_KEY secret the same way as DEEPSEEK_API_KEY, then add:"
+echo "     --set-secrets=DEEPSEEK_API_KEY=${SECRET_NAME}:latest,LANGSMITH_API_KEY=LANGSMITH_API_KEY:latest \\"
+echo "     --set-env-vars=DEEPSEEK_MODEL=deepseek-flash,DEEPSEEK_BASE_URL=https://api.deepseek.com,LANGSMITH_TRACING=true,LANGSMITH_PROJECT=ticket-desk,LANGSMITH_WORKSPACE_ID=<workspace-id>"
+echo "   Organisation-scoped service keys need LANGSMITH_WORKSPACE_ID. Leave LangSmith off the"
+echo "   live walkthrough until you explicitly want unauthenticated visitors writing traces."
+echo
 echo "If Cloud Run rejects region ${REGION}, fall back to a small e2-small VM in asia-east2."
 echo "Do not leave that VM running after the demo. See deploy/teardown.sh and the README."

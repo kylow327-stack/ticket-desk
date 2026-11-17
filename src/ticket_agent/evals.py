@@ -444,15 +444,30 @@ def render_results_markdown(payload: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    import argparse
+
     from ticket_agent.store import Store
 
+    parser = argparse.ArgumentParser(description="Run Ticket Desk live evals.")
+    parser.add_argument(
+        "--langsmith",
+        action="store_true",
+        help="Create or reuse the LangSmith golden dataset and run an experiment. Needs LANGSMITH_API_KEY.",
+    )
+    args = parser.parse_args(argv)
     settings = get_settings()
-    db_path = settings.data_dir / "eval.db"
+    db_path = settings.data_dir / ("langsmith-eval.db" if args.langsmith else "eval.db")
     if db_path.exists():
         db_path.unlink()
     store = Store(db_path)
     store.seed_from_fixtures(reset_operational=True)
+    if args.langsmith:
+        from ticket_agent.langsmith_evals import render_langsmith_summary, run_langsmith_evals
+
+        payload = run_langsmith_evals(store)
+        print(render_langsmith_summary(payload))
+        return 0
     payload = run_live_evals(store)
     print(render_results_markdown(payload))
     return 0 if payload["all_passed"] else 1

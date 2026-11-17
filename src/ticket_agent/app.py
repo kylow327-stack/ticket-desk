@@ -24,6 +24,10 @@ app.mount("/static", StaticFiles(directory=str(PACKAGE_DIR / "static")), name="s
 
 @app.on_event("startup")
 def _startup() -> None:
+    from ticket_agent.langsmith_tracing import api_key_present, configure_tracing, tracing_requested
+
+    if tracing_requested() and api_key_present():
+        configure_tracing(resolve_workspace=True)
     get_store().seed_from_fixtures()
 
 

@@ -38,7 +38,7 @@ UI (FastAPI + Jinja) ──► run_agent()
 ```
 
 - **State in v1:** SQLite plus a JSONL trace file, in-process. Fine for a single-demo instance. **Production swap: Redis** (or Cloud SQL + a queue) so more than one replica can share ticket and refund state. Cloud Run is stateless; a container restart would otherwise lose the SQLite file.
-- **Traces in v1:** JSONL at `data/traces/runs.jsonl` and a Traces page in the UI. **Production swap: Langfuse or LangSmith**, with request/response redaction already in mind. The v1 logger already redacts API-key-like strings and never writes `DEEPSEEK_API_KEY`.
+- **Traces in v1:** JSONL at `data/traces/runs.jsonl` and a Traces page in the UI. That local log remains the built-in walkthrough. Optional **LangSmith** tracing can also capture graph runs and eval experiments when `LANGSMITH_TRACING=true` and `LANGSMITH_API_KEY` are set (see below). The v1 logger already redacts API-key-like strings and never writes `DEEPSEEK_API_KEY` or `LANGSMITH_API_KEY`.
 
 ### Why this shape
 
@@ -78,6 +78,29 @@ python -m ticket_agent.evals
 ```
 
 Live results are written to `evals/latest-results.md` and `evals/latest-results.json`. The Evals page in the UI renders the latest file. A pretty draft with a wrong fact, an auto-approved refund, or a leftover invented phone number is a fail. If a live check fails, the failure is left in the report; it is not marked as a pass.
+
+### LangSmith tracing and evals
+
+Local JSONL traces are enough for the walkthrough UI. To send graph runs to [LangSmith](https://smith.langchain.com/) and run the golden tickets as an experiment:
+
+```bash
+export LANGSMITH_TRACING=true
+export LANGSMITH_API_KEY=  # do not commit or echo the key
+export LANGSMITH_PROJECT=ticket-desk
+# Required for organisation-scoped service keys (Settings → General).
+# A personal org with a single workspace is resolved automatically.
+# export LANGSMITH_WORKSPACE_ID=
+
+# Traced graph runs: start the UI, or run one ticket via the evals job.
+python -m ticket_agent
+
+# Golden dataset + experiment (calls DeepSeek; needs DEEPSEEK_API_KEY as well):
+python -m ticket_agent.evals --langsmith
+```
+
+The experiment reuses the existing groundedness, completeness, safety, and guardrail checks. Repeatability stays in the local live runner above. Open the project, dataset, and experiment URLs printed by the command in the LangSmith Evals dashboard. Do not put a real key in the repo; `.env` is gitignored.
+
+The live Cloud Run walkthrough is not wired to LangSmith yet. Adding `LANGSMITH_API_KEY` as a Secret Manager secret and redeploying is optional and needs an explicit go-ahead, because unauthenticated visitors would then write traces to your account.
 
 ### Eval checks
 
@@ -143,6 +166,8 @@ gcloud run deploy ticket-guardrail-agent \
   --set-env-vars=DEEPSEEK_MODEL=deepseek-flash,DEEPSEEK_BASE_URL=https://api.deepseek.com
 ```
 
+That default deploy does not inject a LangSmith key. To send live walkthrough traces later, create a `LANGSMITH_API_KEY` secret the same way, then add it with `--set-secrets` and set `LANGSMITH_TRACING=true`, `LANGSMITH_PROJECT=ticket-desk`, and `LANGSMITH_WORKSPACE_ID` if your key is organisation-scoped. Leave this off until you are ready; the public walkthrough is unauthenticated.
+
 `--no-allow-unauthenticated` keeps the demo private; grant yourself `roles/run.invoker` to open it.
 
 If Cloud Run is unavailable in that region, fall back to a small **e2-small** VM in `asia-east2`, run the Docker image or `python -m ticket_agent` there, then **stop and delete** the VM after the walkthrough. Do not leave a billable instance running.
@@ -168,6 +193,7 @@ src/ticket_agent/agent.py  LangGraph loop, step limit, fallback draft
 src/ticket_agent/tools.py  Tool registry (no execute/approve tool)
 src/ticket_agent/store.py  SQLite; refunds start pending
 src/ticket_agent/evals.py  Live scorer + markdown report
+src/ticket_agent/langsmith_evals.py  Optional LangSmith dataset and experiment
 tests/                     Deterministic guardrail and loop-limit tests
 evals/latest-results.md    Last measured live run
 deploy/                    Cloud Run / teardown command scripts
